@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * base class for authentication messages login, register
  *
- * @author durrah
+ * @author Durrah
  */
 public interface AuthMessage extends Message {
 

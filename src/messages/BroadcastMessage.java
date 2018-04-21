@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * Broadcast message which will be sent to all connected clients
  *
- * @author durrah
+ * @author Durrah
  */
 public class BroadcastMessage implements Message {
 

@@ -6,9 +6,10 @@
 package messages;
 
 /**
+ * a request from a client to get all online clients
  *
- * @author durrah
+ * @author Durrah
  */
-public class OnlineRequest implements Message{
-    
+public class OnlineRequest implements Message {
+
 }

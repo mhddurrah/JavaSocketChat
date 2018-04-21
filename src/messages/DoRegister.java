@@ -6,8 +6,10 @@
 package messages;
 
 /**
+ * when a non registered user tries to login this response will be returned to
+ * indicate a request to register
  *
- * @author durrah
+ * @author Durrah
  */
 public class DoRegister implements AuthMessage {
 

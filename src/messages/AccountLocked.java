@@ -6,8 +6,10 @@
 package messages;
 
 /**
+ * send to client to indicate that his/her account was locked because of
+ * unsuccessful login tries
  *
- * @author durrah
+ * @author Durrah
  */
 public class AccountLocked implements AuthMessage {
 

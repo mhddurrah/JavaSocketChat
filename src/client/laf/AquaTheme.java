@@ -4,9 +4,10 @@ import javax.swing.plaf.*;
 import javax.swing.plaf.metal.*;
 
 /**
+ * Swing nice Metal LAF theme <br/>
  * This class describes a theme using "blue-green" colors.
  *
- * @author Steve Wilson
+ * @author ola
  */
 public class AquaTheme extends DefaultMetalTheme {
 

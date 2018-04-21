@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * Login message
  *
- * @author durrah
+ * @author Durrah
  */
 public class Login implements Message {
 

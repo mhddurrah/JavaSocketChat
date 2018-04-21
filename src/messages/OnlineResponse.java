@@ -9,8 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * the request of {@link OnlineRequest} contains map of clients (id, name)
  *
- * @author durrah
+ * @author Durrah
  */
 public class OnlineResponse implements Message {
 

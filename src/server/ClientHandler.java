@@ -21,7 +21,7 @@ import messages.WrongPassword;
 
 /**
  *
- * @author durrah
+ * @author Durrah
  */
 public class ClientHandler extends Thread {
 

@@ -20,24 +20,27 @@ import messages.OnlineResponse;
 
 /**
  *
- * @author durrah
+ * @author Durrah
  */
 public class ChatUI extends javax.swing.JFrame {
 
-    ChatClientController clientUi;
+    ChatClientApplication clientUi;
     DefaultListModel<String> onlineList;
     String selectedUser;
 
     /**
      * Creates new form ChatUI
      */
-    public ChatUI(ChatClientController clientUi) throws Exception {
+    public ChatUI(ChatClientApplication clientUi) throws Exception {
         initComponents();
         setResizable(false);
         this.clientUi = clientUi;
 
         clientUi.client.getOnline();
 
+        /**
+         * set current chat for selected user
+         */
         onlineClients.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -136,6 +139,8 @@ public class ChatUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
+
+        // Swing Worker.. offload execution from UI thread
         SwingWorker worker = new SwingWorker() {
             @Override
             protected Object doInBackground() throws Exception {
@@ -190,11 +195,19 @@ public class ChatUI extends javax.swing.JFrame {
     private javax.swing.JButton sendBtn;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * process event messages based on type
+     *
+     * @param _message
+     */
     void process(Message _message) {
         if (_message instanceof Logout) {
             dispose();
             clientUi.client.disconnected = true;
         }
+        /**
+         * display online users on chat panel
+         */
         if (_message instanceof OnlineResponse) {
             try {
                 OnlineResponse online = (OnlineResponse) _message;

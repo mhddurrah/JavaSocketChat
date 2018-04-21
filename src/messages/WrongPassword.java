@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * Wrong password response for both login and register (password mismatch)
  *
- * @author durrah
+ * @author Durrah
  */
 public class WrongPassword implements AuthMessage {
 

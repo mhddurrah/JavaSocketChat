@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * Client register request
  *
- * @author durrah
+ * @author Durrah
  */
 public class Register implements Message {
 

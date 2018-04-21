@@ -6,8 +6,6 @@
 package client;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import messages.AccountLocked;
 import messages.AuthMessage;
 import messages.DoRegister;
@@ -18,17 +16,17 @@ import messages.WrongPassword;
 
 /**
  *
- * @author durrah
+ * @author Durrah
  */
 public class UserUI extends javax.swing.JFrame {
 
-    ChatClientController clientUi;
+    ChatClientApplication clientUi;
     ChatUI chatUI;
 
     /**
      * Creates new form ChatClientUI
      */
-    public UserUI(ChatClientController clientUi) {
+    public UserUI(ChatClientApplication clientUi) {
         initComponents();
         setResizable(false);
         this.clientUi = clientUi;
@@ -245,7 +243,7 @@ public class UserUI extends javax.swing.JFrame {
         if (message instanceof AuthMessage) {
             if (message instanceof RegisterOk) {
                 RegisterOk msg = (RegisterOk) message;
-                JOptionPane.showMessageDialog(this, "Welcome " + msg.name + ", please Login");
+                JOptionPane.showMessageDialog(this, "Welcome " + msg.clientName + ", please Login with id: " + msg.clientId);
                 tabs.setSelectedIndex(0);
             } else if (message instanceof WrongPassword) {
                 JOptionPane.showMessageDialog(null, "Password not match");

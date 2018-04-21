@@ -6,8 +6,8 @@
 package messages;
 
 /**
- *
- * @author durrah
+ * A user logout requestF
+ * @author Durrah
  */
 public class Logout implements Message {
 

@@ -6,17 +6,18 @@
 package messages;
 
 /**
+ * register response of {@link Register}
  *
- * @author durrah
+ * @author Durrah
  */
 public class RegisterOk implements AuthMessage {
 
-    public final String name;
-    public final String username;
+    public final String clientId;
+    public final String clientName;
 
     public RegisterOk(String name, String username) {
-        this.name = name;
-        this.username = username;
+        this.clientId = name;
+        this.clientName = username;
     }
 
 }

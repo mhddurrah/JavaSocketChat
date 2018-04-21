@@ -33,13 +33,17 @@ public class ChatClient {
     ObjectInputStream ois;
     boolean connected;
     public Map<String, String> onlineUsers;
-    ChatClientController ui;
+    ChatClientApplication ui;
     public volatile boolean disconnected = false;
+    Thread eventLoop;
 
-    public ChatClient(ChatClientController ui) {
+    public ChatClient(ChatClientApplication ui) {
         this.ui = ui;
     }
 
+    /**
+     * connect to socket server and start listening to message streams
+     */
     public void connect() {
         try {
             int port = 9001;//server port to connect to server
@@ -48,14 +52,12 @@ public class ChatClient {
             oos = new ObjectOutputStream(soc.getOutputStream());//to send object
             ois = new ObjectInputStream(soc.getInputStream());//to recive object
             connected = true;
-            listener = new Thread(new Listener());
-            listener.start();
+            eventLoop = new Thread(new Listener());
+            eventLoop.start();
         } catch (IOException ex) {
             Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    Thread listener;
 
     void logout() throws Exception {
         write(new Logout());
@@ -65,8 +67,7 @@ public class ChatClient {
 
         @Override
         public void run() {
-            while (true) {
-                if(disconnected)break;
+            while (!disconnected) {
                 try {
                     if (ois != null) {
                         Object object = ois.readObject();
@@ -86,15 +87,13 @@ public class ChatClient {
         return connected;
     }
 
-    public void intiClient(String name, String password) {
-        this.name = name;
-        this.password = password;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    /**
+     * login to socket server, connect if necessary
+     *
+     * @param loginID
+     * @param loginPASS
+     * @throws Exception
+     */
     public void login(String loginID, String loginPASS) throws Exception {
         if (!connected) {
             connect();
@@ -102,6 +101,14 @@ public class ChatClient {
         write(new Login(loginID, loginPASS));
     }
 
+    /**
+     * Register to socket server, connect if necessary
+     *
+     * @param name
+     * @param pass
+     * @param passConfirm
+     * @throws Exception
+     */
     void register(String name, String pass, String passConfirm) throws Exception {
         if (!connected) {
             connect();
@@ -110,19 +117,42 @@ public class ChatClient {
 
     }
 
+    /**
+     * get online users
+     *
+     * @throws Exception
+     */
     void getOnline() throws Exception {
         write(new OnlineRequest());
-
     }
 
+    /**
+     * send a message to specific user
+     *
+     * @param selectedUser
+     * @param text
+     * @throws Exception
+     */
     void sendMessage(String selectedUser, String text) throws Exception {
         write(new DirectMessage(selectedUser, text));
     }
 
+    /**
+     * broadcast message
+     *
+     * @param text
+     * @throws Exception
+     */
     void broadcast(String text) throws Exception {
         write(new BroadcastMessage(text));
     }
 
+    /**
+     * used in all client send events, write message to socket output stream
+     *
+     * @param message
+     * @throws Exception
+     */
     void write(Message message) throws Exception {
         oos.writeObject(message);
         oos.flush();

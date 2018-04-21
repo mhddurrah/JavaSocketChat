@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import messages.BroadcastMessage;
 import messages.DirectMessage;
@@ -21,36 +22,54 @@ import messages.WrongPassword;
  */
 public class Server {
 
+    /**
+     * client information
+     */
     class Client {
 
-        public final String username;
+        public final String clientId;
         public final String name;
         public final String password;
+        public ObjectOutputStream writeHandle;
 
         public Client(String username, String name, String password) {
-            this.username = username;
+            this.clientId = username;
             this.name = name;
             this.password = password;
         }
-
     }
 
     private static final int PORT = 9001;
+    /**
+     * holds all registered clients, for advanced scenarios it can be stored in
+     * database
+     */
     private final Map<String, Client> registeredClients = new ConcurrentHashMap<>();
+    /**
+     * holds currently connected clients
+     */
     private final Map<String, Client> loggedClients = new ConcurrentHashMap<>();
-    public final Map<String, ObjectOutputStream> writeHandles = new ConcurrentHashMap<>();
 
     public Server() {
     }
 
+    /**
+     * register user
+     *
+     * @param reg
+     * @return
+     */
     public Message register(Register reg) {
+        Random random = new Random(System.currentTimeMillis());
         if (!reg.passwordMatches()) {
             return new WrongPassword();
         }
-        String username = reg.name;
-        Client client = new Client(username, reg.name, reg.pass);
-        registeredClients.put(username, client);
-        return new RegisterOk(reg.name, username);
+        int rand = random.nextInt(1000);
+        String clientId = reg.name.replaceAll("\\s+", ".").concat(String.valueOf(rand)).toLowerCase();
+
+        Client client = new Client(clientId, reg.name, reg.pass);
+        registeredClients.put(clientId, client);
+        return new RegisterOk(clientId, reg.name);
     }
 
     public Message login(String username, String password) {
@@ -87,8 +106,7 @@ public class Server {
     }
 
     void send(String from, DirectMessage msg) throws Exception {
-        System.out.println("from: " + from + " to: " + msg.to);
-        ObjectOutputStream targetOut = writeHandles.get(msg.to);
+        ObjectOutputStream targetOut = loggedClients.get(msg.to).writeHandle;
         DirectMessage toSend = new DirectMessage(from, msg.content);
         targetOut.writeObject(toSend);
         targetOut.flush();
@@ -101,40 +119,66 @@ public class Server {
 
     void broadcast(String from, BroadcastMessage msg) throws Exception {
         DirectMessage toSend = new DirectMessage(from, msg.content);
-        for (String clientHandle : writeHandles.keySet()) {
-            if (!clientHandle.equals(from)) {
-                writeHandles.get(clientHandle).writeObject(toSend);
-                writeHandles.get(clientHandle).flush();
-            }
-        }
+        writeAllExceptSender(from, toSend);
     }
 
+    /**
+     * write message to specific client from {@link #writeHandles}
+     *
+     * @param clientId
+     * @param message
+     * @throws Exception
+     */
     void writeClient(String clientId, Message message) throws Exception {
-        ObjectOutputStream targetOut = writeHandles.get(clientId);
+        ObjectOutputStream targetOut = loggedClients.get(clientId).writeHandle;
         targetOut.writeObject(message);
         targetOut.flush();
     }
 
+    /**
+     * write message to all clients
+     *
+     * @param message
+     * @throws Exception
+     */
     void writeAll(Message message) throws Exception {
-        for (String clientHandle : writeHandles.keySet()) {
-            writeHandles.get(clientHandle).writeObject(message);
-            writeHandles.get(clientHandle).flush();
+        for (String clientHandle : loggedClients.keySet()) {
+            writeClient(clientHandle, message);
         }
     }
 
+    /**
+     * write message to all clients except sender, used for logout..etc
+     *
+     * @param sender
+     * @param message
+     * @throws Exception
+     */
     void writeAllExceptSender(String sender, Message message) throws Exception {
-        for (String clientHandle : writeHandles.keySet()) {
+        for (String clientHandle : loggedClients.keySet()) {
             if (!clientHandle.equals(sender)) {
-                writeHandles.get(clientHandle).writeObject(message);
-                writeHandles.get(clientHandle).flush();
+                writeClient(clientHandle, message);
             }
         }
     }
 
+    /**
+     * user logged in, add its write handle to connected write handles
+     *
+     * @param clientId
+     * @param out
+     */
     void loggedIn(String clientId, ObjectOutputStream out) {
-        this.writeHandles.put(clientId, out);
+        loggedClients.get(clientId).writeHandle = out;
     }
 
+    /**
+     * whenever a user logged in or out this will update online client for all
+     * except sender
+     *
+     * @param clientId
+     * @throws Exception
+     */
     void updateOnline(String clientId) throws Exception {
         for (String client : loggedClients.keySet()) {
             if (!clientId.equals(client)) {

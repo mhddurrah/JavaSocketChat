@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * if the user was authenticated successfully this response will be returned
  *
- * @author durrah
+ * @author Durrah
  */
 public class LoginOk implements AuthMessage {
 

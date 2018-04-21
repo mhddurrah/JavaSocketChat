@@ -6,8 +6,9 @@
 package messages;
 
 /**
+ * Direct message to a client
  *
- * @author durrah
+ * @author Durrah
  */
 public class DirectMessage implements Message {
 

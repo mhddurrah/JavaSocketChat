@@ -12,15 +12,16 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import messages.Message;
 
 /**
+ * UI application for chat client
  *
- * @author durrah
+ * @author Durrah
  */
-public class ChatClientController {
+public class ChatClientApplication {
 
     ChatClient client;
     UserUI userUi;
 
-    ChatClientController() {
+    ChatClientApplication() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             setDefaultLookAndFeelDecorated(true);
@@ -30,6 +31,9 @@ public class ChatClientController {
     }
 
     void start() {
+        /**
+         * set up the client
+         */
         client = new ChatClient(this);
         userUi = new UserUI(this);
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -44,9 +48,14 @@ public class ChatClientController {
         //MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
         MetalLookAndFeel.setCurrentTheme(new AquaTheme());
         // Show name of the theme as window title
-        new ChatClientController().start();
+        new ChatClientApplication().start();
     }
 
+    /**
+     * delegate the message process to the UI
+     *
+     * @param message
+     */
     void process(Message message) {
         userUi.process(message);
     }
