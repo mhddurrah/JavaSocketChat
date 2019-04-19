@@ -5,33 +5,33 @@
  */
 package client;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Collections;
-import javax.swing.DefaultListModel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import messages.Client;
 import messages.DirectMessage;
 import messages.Logout;
 import messages.Message;
 import messages.OnlineResponse;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 /**
- *
  * @author Durrah
  */
 public class ChatUI extends javax.swing.JFrame {
 
-    ChatClientApplication clientUi;
-    DefaultListModel<String> onlineList;
-    String selectedUser;
+    private ClientApplication clientUi;
+    private DefaultListModel<Client> onlineList;
+    private String selectedUser;
 
     /**
      * Creates new form ChatUI
      */
-    public ChatUI(ChatClientApplication clientUi) throws Exception {
+    public ChatUI(ClientApplication clientUi) throws Exception {
         initComponents();
         setResizable(false);
         this.clientUi = clientUi;
@@ -44,7 +44,8 @@ public class ChatUI extends javax.swing.JFrame {
         onlineClients.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                selectedUser = onlineList.get(e.getFirstIndex());
+                sendBtn.setEnabled(true);
+                selectedUser = onlineList.get(e.getFirstIndex()).username;
             }
         });
     }
@@ -74,65 +75,86 @@ public class ChatUI extends javax.swing.JFrame {
         jScrollPane2.setViewportView(onlineClients);
 
         sendBtn.setText("Send");
-        sendBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sendBtnActionPerformed(evt);
-            }
-        });
+        sendBtn.setEnabled(false);
+        sendBtn.addActionListener(this::sendBtnActionPerformed);
 
         broadcastBtn.setText("Broadcast");
-        broadcastBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                broadcastBtnActionPerformed(evt);
-            }
-        });
+        broadcastBtn.addActionListener(this::broadcastBtnActionPerformed);
 
         logoutBtn.setText("Logout");
-        logoutBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logoutBtnActionPerformed(evt);
-            }
-        });
+        logoutBtn.addActionListener(this::logoutBtnActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sendBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(73, 73, 73)
-                        .addComponent(broadcastBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(messageField)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(logoutBtn)
-                .addGap(26, 26, 26))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                      .addGroup(layout.createSequentialGroup()
+                                      .addContainerGap()
+                                      .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                      .addGroup(layout.createSequentialGroup()
+                                                                      .addComponent(sendBtn,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                              97,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                      .addGap(73, 73, 73)
+                                                                      .addComponent(broadcastBtn,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                              107,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                      .addGroup(layout.createParallelGroup(
+                                                              javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                                      .addComponent(messageField)
+                                                                      .addComponent(jScrollPane1,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                              277,
+                                                                              javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                      .addGap(18, 18, 18)
+                                      .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 122,
+                                              Short.MAX_VALUE)
+                                      .addContainerGap())
+                      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                                                  .addContainerGap(
+                                                                                          javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                          Short.MAX_VALUE)
+                                                                                  .addComponent(logoutBtn)
+                                                                                  .addGap(26, 26, 26))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(logoutBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(sendBtn)
-                    .addComponent(broadcastBtn))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                                                  .addContainerGap()
+                                                                                  .addComponent(logoutBtn)
+                                                                                  .addPreferredGap(
+                                                                                          javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                                                          javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                          Short.MAX_VALUE)
+                                                                                  .addGroup(layout.createParallelGroup(
+                                                                                          javax.swing.GroupLayout.Alignment.LEADING,
+                                                                                          false)
+                                                                                                  .addGroup(layout
+                                                                                                          .createSequentialGroup()
+                                                                                                          .addComponent(
+                                                                                                                  jScrollPane1)
+                                                                                                          .addPreferredGap(
+                                                                                                                  javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                                                          .addComponent(
+                                                                                                                  messageField,
+                                                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                                  55,
+                                                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                                                  .addComponent(
+                                                                                                          jScrollPane2,
+                                                                                                          javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                          298,
+                                                                                                          javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                                  .addPreferredGap(
+                                                                                          javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                                  .addGroup(layout.createParallelGroup(
+                                                                                          javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                                  .addComponent(sendBtn)
+                                                                                                  .addComponent(
+                                                                                                          broadcastBtn))
+                                                                                  .addContainerGap())
         );
 
         pack();
@@ -145,7 +167,12 @@ public class ChatUI extends javax.swing.JFrame {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    clientUi.client.sendMessage(selectedUser, messageField.getText());
+                    String message = messageField.getText();
+                    clientUi.client.sendMessage(selectedUser, message);
+                    messagesPanel
+                            .setText(messagesPanel.getText() + "\n" +
+                                    "You :\n\t" +
+                                    message + "\n________________________\n");
                     messageField.setText("");
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -157,7 +184,8 @@ public class ChatUI extends javax.swing.JFrame {
         worker.execute();
     }//GEN-LAST:event_sendBtnActionPerformed
 
-    private void broadcastBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_broadcastBtnActionPerformed
+    private void broadcastBtnActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_broadcastBtnActionPerformed
         // TODO add your handling code here:
         SwingWorker worker = new SwingWorker() {
             @Override
@@ -191,7 +219,7 @@ public class ChatUI extends javax.swing.JFrame {
     private javax.swing.JButton logoutBtn;
     private javax.swing.JTextField messageField;
     private javax.swing.JTextPane messagesPanel;
-    private javax.swing.JList<String> onlineClients;
+    private javax.swing.JList<Client> onlineClients;
     private javax.swing.JButton sendBtn;
     // End of variables declaration//GEN-END:variables
 
@@ -232,9 +260,13 @@ public class ChatUI extends javax.swing.JFrame {
         if (_message instanceof DirectMessage) {
             DirectMessage message = (DirectMessage) _message;
             String from = message.to;
-            int idx = Collections.list(onlineList.elements()).indexOf(from);
+            int idx =
+                    Collections.list(onlineList.elements()).stream().map(e -> e.username).collect(Collectors.toList())
+                               .indexOf(from);
             onlineClients.setSelectedIndex(idx);
-            messagesPanel.setText(message.to + ":\t " + messagesPanel.getText() + "\n" + message.content + "\n");
+            messagesPanel.setText(messagesPanel.getText() + "\n" +
+                    message.to + ":\n\t" +
+                    message.content + "\n________________________\n");
         }
     }
 }

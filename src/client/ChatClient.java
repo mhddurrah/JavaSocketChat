@@ -5,39 +5,33 @@
  */
 package client;
 
-import messages.Login;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import messages.BroadcastMessage;
 import messages.DirectMessage;
+import messages.Login;
 import messages.Logout;
 import messages.Message;
 import messages.OnlineRequest;
 import messages.Register;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author Durrah
  */
 public class ChatClient {
+    private ObjectOutputStream oos;
+    private ObjectInputStream ois;
+    private boolean connected;
+    private ClientApplication ui;
+    volatile boolean disconnected = false;
+    private Thread eventLoop;
 
-    String name;
-    String id;
-    String password;
-    ObjectOutputStream oos;
-    ObjectInputStream ois;
-    boolean connected;
-    public Map<String, String> onlineUsers;
-    ChatClientApplication ui;
-    public volatile boolean disconnected = false;
-    Thread eventLoop;
-
-    public ChatClient(ChatClientApplication ui) {
+    public ChatClient(ClientApplication ui) {
         this.ui = ui;
     }
 

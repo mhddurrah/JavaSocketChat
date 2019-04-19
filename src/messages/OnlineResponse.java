@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * the request of {@link OnlineRequest} contains map of clients (id, name)
+ * the request of {@link OnlineRequest} contains map of clients (id, displayName)
  *
  * @author Durrah
  */
 public class OnlineResponse implements Message {
 
-    public final Map<String, String> clients = new HashMap<>();
+    public final Map<String, Client> clients = new HashMap<>();
 }

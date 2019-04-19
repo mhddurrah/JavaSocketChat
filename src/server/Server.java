@@ -1,12 +1,7 @@
 package server;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import messages.BroadcastMessage;
+import messages.Client;
 import messages.DirectMessage;
 import messages.DoRegister;
 import messages.LoginOk;
@@ -16,8 +11,15 @@ import messages.Register;
 import messages.RegisterOk;
 import messages.WrongPassword;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 /**
- *
  * @author Durrah
  */
 public class Server {
@@ -25,16 +27,13 @@ public class Server {
     /**
      * client information
      */
-    class Client {
+    class ConnectedClient extends Client {
 
-        public final String clientId;
-        public final String name;
-        public final String password;
-        public ObjectOutputStream writeHandle;
+        final String password;
+        ObjectOutputStream writeHandle;
 
-        public Client(String username, String name, String password) {
-            this.clientId = username;
-            this.name = name;
+        ConnectedClient(String username, String name, String password) {
+            super(username, name);
             this.password = password;
         }
     }
@@ -44,13 +43,13 @@ public class Server {
      * holds all registered clients, for advanced scenarios it can be stored in
      * database
      */
-    private final Map<String, Client> registeredClients = new ConcurrentHashMap<>();
+    private final Map<String, ConnectedClient> registeredClients = new ConcurrentHashMap<>();
     /**
      * holds currently connected clients
      */
-    private final Map<String, Client> loggedClients = new ConcurrentHashMap<>();
+    private final Map<String, ConnectedClient> loggedClients = new ConcurrentHashMap<>();
 
-    public Server() {
+    private Server() {
     }
 
     /**
@@ -64,12 +63,12 @@ public class Server {
         if (!reg.passwordMatches()) {
             return new WrongPassword();
         }
-        int rand = random.nextInt(1000);
-        String clientId = reg.name.replaceAll("\\s+", ".").concat(String.valueOf(rand)).toLowerCase();
+        int rand = random.nextInt(100);
+        String username = reg.name.replaceAll("\\s+", ".").concat(String.valueOf(rand)).toLowerCase();
 
-        Client client = new Client(clientId, reg.name, reg.pass);
-        registeredClients.put(clientId, client);
-        return new RegisterOk(clientId, reg.name);
+        ConnectedClient connectedClient = new ConnectedClient(username, reg.name, reg.pass);
+        registeredClients.put(username, connectedClient);
+        return new RegisterOk(username, reg.name);
     }
 
     public Message login(String username, String password) {
@@ -83,7 +82,7 @@ public class Server {
         }
 
         loggedClients.put(username, registeredClients.get(username));
-        return new LoginOk(registeredClients.get(username).name);
+        return new LoginOk(registeredClients.get(username).displayName);
     }
 
     public static void main(String[] args) throws IOException {
@@ -97,11 +96,8 @@ public class Server {
 
     Message onlineClients(String except) {
         OnlineResponse online = new OnlineResponse();
-        for (Map.Entry<String, Client> entry : loggedClients.entrySet()) {
-            if (!entry.getKey().equals(except)) {
-                online.clients.put(entry.getKey(), entry.getValue().name);
-            }
-        }
+        online.clients.putAll(loggedClients.entrySet().stream().filter(e -> !e.getKey().equals(except)).
+                collect(Collectors.toMap(Map.Entry::getKey, e -> new Client(e.getKey(), e.getValue().displayName))));
         return online;
     }
 
@@ -123,7 +119,7 @@ public class Server {
     }
 
     /**
-     * write message to specific client from {@link #writeHandles}
+     * write message to specific client from {@link writeHandles}
      *
      * @param clientId
      * @param message

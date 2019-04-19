@@ -16,47 +16,15 @@ import messages.Message;
  *
  * @author Durrah
  */
-public class ChatClientApplication {
+public class ChatClientApplication extends ClientApplication{
 
-    ChatClient client;
-    UserUI userUi;
-
-    ChatClientApplication() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-            setDefaultLookAndFeelDecorated(true);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    void start() {
-        /**
-         * set up the client
-         */
-        client = new ChatClient(this);
-        userUi = new UserUI(this);
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                userUi.setVisible(true);
-            }
-        });
-    }
 
     public static void main(String[] args) {
         // set the chosen theme
         //MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
         MetalLookAndFeel.setCurrentTheme(new AquaTheme());
-        // Show name of the theme as window title
+        // Show displayName of the theme as window title
         new ChatClientApplication().start();
     }
 
-    /**
-     * delegate the message process to the UI
-     *
-     * @param message
-     */
-    void process(Message message) {
-        userUi.process(message);
-    }
 }
