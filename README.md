@@ -1,2 +1,2 @@
 # JavaSocketChat
-Simple chat application with java sockets #netbeans-ide
+Simple chat application with java sockets
