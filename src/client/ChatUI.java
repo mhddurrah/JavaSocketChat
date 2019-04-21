@@ -12,11 +12,11 @@ import messages.Message;
 import messages.OnlineResponse;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +27,17 @@ public class ChatUI extends javax.swing.JFrame {
     private ClientApplication clientUi;
     private DefaultListModel<Client> onlineList;
     private String selectedUser;
+    private List<InboxItem> inbox = new ArrayList<>();
+
+    class InboxItem {
+        final String from;
+        final String message;
+
+        InboxItem(String from, String message) {
+            this.from = from;
+            this.message = message;
+        }
+    }
 
     /**
      * Creates new form ChatUI
@@ -41,13 +52,13 @@ public class ChatUI extends javax.swing.JFrame {
         /**
          * set current chat for selected user
          */
-        onlineClients.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                sendBtn.setEnabled(true);
-                selectedUser = onlineList.get(e.getFirstIndex()).username;
-            }
+        onlineClients.addListSelectionListener(e -> {
+            sendBtn.setEnabled(true);
+            System.out.println("Online clients: " + onlineClients.getSelectedIndex());
+            selectedUser = onlineList.get(onlineClients.getSelectedIndex()).username;
+            updateChat(selectedUser);
         });
+
     }
 
     /**
@@ -169,11 +180,10 @@ public class ChatUI extends javax.swing.JFrame {
                 try {
                     String message = messageField.getText();
                     clientUi.client.sendMessage(selectedUser, message);
-                    messagesPanel
-                            .setText(messagesPanel.getText() + "\n" +
-                                    "You :\n\t" +
-                                    message + "\n________________________\n");
+                    inbox.add(new InboxItem("You", message));
+                    updateChat(selectedUser);
                     messageField.setText("");
+                    sendBtn.setEnabled(false);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(ChatUI.this, "Error Sending Message");
@@ -264,9 +274,19 @@ public class ChatUI extends javax.swing.JFrame {
                     Collections.list(onlineList.elements()).stream().map(e -> e.username).collect(Collectors.toList())
                                .indexOf(from);
             onlineClients.setSelectedIndex(idx);
-            messagesPanel.setText(messagesPanel.getText() + "\n" +
-                    message.to + ":\n\t" +
-                    message.content + "\n________________________\n");
+            inbox.add(new InboxItem(message.to, message.content));
+            updateChat(message.to);
         }
+    }
+
+    private void updateChat(String with) {
+        messagesPanel.setText("");
+        inbox.stream().filter(i -> i.from.equalsIgnoreCase("you") || with.equalsIgnoreCase(i.from))
+             .forEach(p -> {
+                 messagesPanel
+                         .setText(messagesPanel.getText() + "\n" +
+                                 p.from + " :\n\t" +
+                                 p.message + "\n________________________\n");
+             });
     }
 }

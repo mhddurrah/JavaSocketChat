@@ -128,6 +128,7 @@ public class ChatClient {
      * @throws Exception
      */
     void sendMessage(String selectedUser, String text) throws Exception {
+        System.out.println("Message to: " + selectedUser);
         write(new DirectMessage(selectedUser, text));
     }
 

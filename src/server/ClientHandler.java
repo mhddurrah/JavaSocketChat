@@ -5,22 +5,22 @@
  */
 package server;
 
+import messages.AccountLocked;
+import messages.BroadcastMessage;
+import messages.DirectMessage;
 import messages.Login;
+import messages.Logout;
+import messages.Message;
+import messages.OnlineRequest;
 import messages.Register;
+import messages.WrongPassword;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import messages.AccountLocked;
-import messages.BroadcastMessage;
-import messages.DirectMessage;
-import messages.Logout;
-import messages.Message;
-import messages.OnlineRequest;
-import messages.WrongPassword;
 
 /**
- *
  * @author Durrah
  */
 public class ClientHandler extends Thread {
@@ -48,7 +48,7 @@ public class ClientHandler extends Thread {
                 execute(message, in, out);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Error: " + ex.getLocalizedMessage());
         }
     }
 
@@ -86,6 +86,7 @@ public class ClientHandler extends Thread {
 
         if (message instanceof DirectMessage) {
             DirectMessage msg = (DirectMessage) message;
+            System.out.println("Message from: " + clientId + " To: " + msg.to);
             server.send(clientId, msg);
             return;
         }
